@@ -1,6 +1,14 @@
+require("dotenv").config();
+const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
 const port = 5000;
+const { User } = require("./models/User");
+
+// application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+// aaplication/json
+app.use(bodyParser.json());
 
 /**
  * mongoose - mongoDB 기반의 ODM 라이브러리로 데이터베이스를 더 쉽게 다루게 해줌
@@ -10,19 +18,27 @@ const port = 5000;
  * 4. 데이터 검증 및 트랜잭션 처리등 다양한 기능 제공
  */
 const mongoose = require("mongoose");
-mongoose
-  .connect(
-    "mongodb+srv://rockbell89:database@boilerplate.tqciddq.mongodb.net/test",
-    {
-      useNewUrlParser: true, // MongoDB 드라이버가 새로운 URL 구문 분석기를 사용하도록 설정
-      useUnifiedTopology: true, // MongoDB 드라이버가 새로운 토폴로지 엔진을 사용하도록 설정 (서버 연결 안정화 및 캡슐화)
-      useCreateIndex: true, // 색인을 생성
-      useFindAndModify: false,
-    }
-  )
-  .then(() => console.log("MongoDB Conntected..."))
-  .catch((err) => console.error(err));
+mongoose.connect(process.env.MONGO_DB_URL).then(() => {
+  console.log("Connected....");
+});
 
 app.get("/", (req, res) => res.send("Hello World!"));
+app.post("/register", async (req, res) => {
+  const user = await new User(req.body);
+  try {
+    const user = new User(req.body);
+    const userStatus = await user.save();
+
+    if (!userStatus) {
+      const err = new Error("실패");
+      res.status(400).json({ success: fail, err });
+    }
+    res.status(200).json({ success: true });
+    console.log(userStatus);
+  } catch (err) {
+    res.status(500).send(err);
+    console.log(err);
+  }
+});
 
 app.listen(port, () => console.log(`Example app listening on port ${port}`));
