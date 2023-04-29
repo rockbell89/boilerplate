@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGO_DB_URL).then(() => {
 });
 
 app.get("/", (req, res) => res.send("Hello World!"));
-app.post("/register", async (req, res) => {
+app.post("/api/users/register", async (req, res) => {
   try {
     const user = new User(req.body);
     const userStatus = await user.save();
@@ -42,9 +42,11 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/api/users/login", async (req, res) => {
+  console.log(req.body);
   try {
     const user = await User.findOne({ email: req.body.email });
+    console.log(user);
     if (!user) {
       return res.json({
         loginSuccess: false,
@@ -74,7 +76,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/auth", auth, (req, res) => {
+app.get("/api/users/auth", auth, (req, res) => {
   res.status(200).json({
     isAuth: true,
     _id: req.user._id,
@@ -83,7 +85,7 @@ app.get("/auth", auth, (req, res) => {
   });
 });
 
-app.get("/logout", auth, async (req, res) => {
+app.post("/api/users/logout", auth, async (req, res) => {
   try {
     const isUpdated = await User.findOneAndUpdate(
       { _id: req.user._id },
